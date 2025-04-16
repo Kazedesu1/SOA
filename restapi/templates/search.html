@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Tìm kiếm sản phẩm</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">🔎 Tìm sản phẩm</a>
+      <div class="collapse navbar-collapse">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="/cart">🛒 Giỏ hàng</a></li>
+          <li class="nav-item"><a class="nav-link" href="/login">Đăng xuất</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container mt-5">
+    <h3>Tìm kiếm sản phẩm</h3>
+    <input id="searchInput" class="form-control" placeholder="Nhập từ khóa">
+    <button class="btn btn-primary mt-2" onclick="searchProduct()">Tìm</button>
+    <div id="result" class="mt-4"></div>
+  </div>
+
+  <script>
+    function searchProduct() {
+      const q = document.getElementById("searchInput").value;
+      fetch(`/search?q=${encodeURIComponent(q)}`)
+        .then(res => res.json())
+        .then(data => {
+          let html = "<div class='row'>";
+          data.forEach(p => {
+            html += `
+              <div class="col-md-4 mb-3">
+                <div class="card">
+                  <img src="${p.picture}" class="card-img-top" alt="Ảnh">
+                  <div class="card-body">
+                    <h5 class="card-title">${p.product}</h5>
+                    <p class="card-text">${p.brand} | ${p.model} | RAM: ${p.RAM}</p>
+                    <p><strong>${p.price} VND</strong></p>
+                    <button class="btn btn-success" onclick="addToCart(${p.id})">Thêm vào giỏ</button>
+                  </div>
+                </div>
+              </div>`;
+          });
+          html += "</div>";
+          document.getElementById("result").innerHTML = html;
+        });
+    }
+
+    function addToCart(productId) {
+      const email = prompt("Nhập email để thêm vào giỏ:");
+      const today = new Date().toISOString().split("T")[0];
+      fetch("/add_to_cart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_email: email,
+          product_id: productId,
+          purchase_date: today
+        })
+      })
+      .then(res => res.json())
+      .then(data => alert(data.message));
+    }
+  </script>
+</body>
+</html>
